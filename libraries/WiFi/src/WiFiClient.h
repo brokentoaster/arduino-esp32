@@ -49,6 +49,7 @@ public:
     int read();
     int read(uint8_t *buf, size_t size);
     int peek();
+    size_t peekBytes(uint8_t *buffer, size_t length);
     void flush();
     void stop();
     uint8_t connected();
