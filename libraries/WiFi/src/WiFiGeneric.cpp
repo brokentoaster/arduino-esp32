@@ -717,8 +717,8 @@ int WiFiGenericClass::hostByName(const char* aHostname, IPAddress& aResult)
         aResult = addr.u_addr.ip4.addr;
     } else if(err == ERR_INPROGRESS) {
         waitStatusBits(WIFI_DNS_DONE_BIT, 4000);
-        clearStatusBits(WIFI_DNS_DONE_BIT);
     }
+    clearStatusBits(WIFI_DNS_DONE_BIT);
     setStatusBits(WIFI_DNS_IDLE_BIT);
     if((uint32_t)aResult == 0){
         log_e("DNS Failed for %s", aHostname);
