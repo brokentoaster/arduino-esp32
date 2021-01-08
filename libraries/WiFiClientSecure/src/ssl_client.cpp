@@ -213,11 +213,22 @@ int start_ssl_client(sslclient_context *ssl_client, const char *host, uint32_t p
     unsigned long handshake_start_time=millis();
     while ((ret = mbedtls_ssl_handshake(&ssl_client->ssl_ctx)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+            // ++++++++++ ADDED TO FIX MEMORY LEAK ON FAILED CONNECTION ++++++++++
+            if (cli_key != NULL)  mbedtls_pk_free(&ssl_client->client_key);
+            if (rootCABuff != NULL) mbedtls_x509_crt_free(&ssl_client->ca_cert);
+            if (cli_cert != NULL)  mbedtls_x509_crt_free(&ssl_client->client_cert);
+            // ++++++++++ END ++++++++++
             return handle_error(ret);
         }
-        if((millis()-handshake_start_time)>ssl_client->handshake_timeout)
-			return -1;
-	    vTaskDelay(2);//2 ticks
+        if ((millis()-handshake_start_time) > ssl_client->handshake_timeout) {
+            // ++++++++++ ADDED TO FIX MEMORY LEAK ON FAILED CONNECTION ++++++++++
+            if (cli_key != NULL)  mbedtls_pk_free(&ssl_client->client_key);
+            if (rootCABuff != NULL) mbedtls_x509_crt_free(&ssl_client->ca_cert);
+            if (cli_cert != NULL)  mbedtls_x509_crt_free(&ssl_client->client_cert);
+            // ++++++++++ END ++++++++++
+            return -1;
+        }
+        vTaskDelay(2);//2 ticks
     }
 
 
@@ -241,7 +252,7 @@ int start_ssl_client(sslclient_context *ssl_client, const char *host, uint32_t p
     } else {
         log_v("Certificate verified.");
     }
-    
+
     if (rootCABuff != NULL) {
         mbedtls_x509_crt_free(&ssl_client->ca_cert);
     }
@@ -252,7 +263,7 @@ int start_ssl_client(sslclient_context *ssl_client, const char *host, uint32_t p
 
     if (cli_key != NULL) {
         mbedtls_pk_free(&ssl_client->client_key);
-    }    
+    }
 
     log_v("Free internal heap after TLS %u", ESP.getFreeHeap());
 
