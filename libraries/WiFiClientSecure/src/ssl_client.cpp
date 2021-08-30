@@ -220,6 +220,7 @@ int start_ssl_client(sslclient_context *ssl_client, const char *host, uint32_t p
             // ++++++++++ END ++++++++++
             return handle_error(ret);
         }
+
         if ((millis()-handshake_start_time) > ssl_client->handshake_timeout) {
             // ++++++++++ ADDED TO FIX MEMORY LEAK ON FAILED CONNECTION ++++++++++
             if (cli_key != NULL)  mbedtls_pk_free(&ssl_client->client_key);
@@ -228,6 +229,7 @@ int start_ssl_client(sslclient_context *ssl_client, const char *host, uint32_t p
             // ++++++++++ END ++++++++++
             return -1;
         }
+        
         vTaskDelay(2);//2 ticks
     }
 
